@@ -7,16 +7,11 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/russross/blackfriday"
+	"github.com/daimatz/gomiki/html"
 )
 
 const Home string = "$HOME/Dropbox"
 const Addr string = ":8080"
-
-type Config struct {
-	Home string
-	Port int
-}
 
 type RootHandler struct{}
 
@@ -35,8 +30,12 @@ func (h RootHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Printf("failed to read %s\n", path)
 	}
 
-	html := blackfriday.MarkdownCommon([]byte(md))
-	w.Write([]byte(html))
+	err = html.MainTemplate.Execute(w, html.MainArg{
+		html.MarkdownToTemplateHTML(md),
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func main() {
