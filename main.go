@@ -23,11 +23,19 @@ func (h RootHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer file.Close()
 	if err != nil {
 		log.Printf("failed to open %s\n", path)
+		if os.IsNotExist(err) {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
 	}
 
 	md, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Printf("failed to read %s\n", path)
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
 	}
 
 	err = html.MainTemplate.Execute(w, html.MainArg{
@@ -35,6 +43,7 @@ func (h RootHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
