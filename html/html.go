@@ -7,7 +7,14 @@ import (
 )
 
 func MarkdownToTemplateHTML(md []byte) template.HTML {
-	html := blackfriday.MarkdownCommon([]byte(md))
+	flags := blackfriday.HTML_USE_XHTML
+	renderer := blackfriday.HtmlRenderer(flags, "", "")
+
+	extensions := blackfriday.EXTENSION_FENCED_CODE |
+		blackfriday.EXTENSION_TABLES |
+		blackfriday.EXTENSION_AUTOLINK
+
+	html := blackfriday.Markdown([]byte(md), renderer, extensions)
 	return template.HTML(string(html))
 }
 
